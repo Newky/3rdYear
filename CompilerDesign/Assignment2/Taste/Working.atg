@@ -1,0 +1,232 @@
+#include "SymbolTable.h"
+#include "CodeGenerator.h"
+#include "wchar.h"
+COMPILER Taste
+
+
+	int // operators
+	  plus, minus, times, slash, equ, lss, gtr, ne, leq, geq;
+
+	int // types
+	  undef, integer, boolean;
+
+	int // object kinds
+	  var, proc;
+
+	int // opcodes
+	  ADD,  SUB,   MUL,   DIV,   EQU,  LSS, GTR, NEG, NE,LEQ,GEQ,
+	  LOAD, LOADG, STO,   STOG,  CONST,
+	  CALL, RET,   ENTER, LEAVE,
+	  JMP,  FJMP,  READ,  WRITE; 
+	
+	SymbolTable   *tab;
+	CodeGenerator *gen;
+
+	void Err(wchar_t* msg) {
+		errors->Error(la->line, la->col, msg);
+	}
+
+	void InitDeclarations() { // it must exist
+		plus = 0; minus = 1; times = 2; slash = 3; equ = 4; lss = 5; gtr = 6; ne = 8; leq = 9;geq = 10; // operators
+		undef = 0; integer = 1; boolean = 2; // types
+		var = 0; proc = 1; // object kinds
+
+		// opcodes
+		ADD  =  0; SUB   =  1; MUL   =  2; DIV   =  3; EQU   =  4; LSS = 5; GTR = 6; NEG = 7;NE = 8; LEQ =9; GEQ = 10;
+		LOAD =  11; LOADG =  12; STO   = 13; STOG  = 14; CONST = 15;
+		CALL = 16; RET   = 17; ENTER = 18; LEAVE = 19;
+		JMP  = 20; FJMP  = 21; READ  = 22; WRITE = 23;
+	}
+
+
+  
+/*--------------------------------------------------------------------------*/
+CHARACTERS
+  letter = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".
+  digit = "0123456789".
+  cr  = '\r'.
+  lf  = '\n'.
+  tab = '\t'.
+
+TOKENS
+  ident  = letter {letter | digit}.
+  number = digit {digit}.
+
+COMMENTS FROM "/*" TO "*/" NESTED
+COMMENTS FROM "//" TO cr lf
+
+IGNORE cr + lf + tab
+
+
+
+PRODUCTIONS
+/*------------------------------------------------------------------------*/
+AddOp<int &op>
+=                        (. op = -1; .)
+  ( '+'	                 (. op = plus; .)
+  | '-'                  (. op = minus; .)
+  ).
+/*------------------------------------------------------------------------*/
+Expr<int &type>          (. int type1, op, adr;.)
+= SimExpr<type>
+  [ RelOp<op>
+    SimExpr<type1>       (. if (type != type1) Err(L"incompatible types");
+                            gen->Emit(op); type = boolean; .)
+  ]. 
+/*------------------------------------------------------------------------*/
+Factor<int &type>        (. int n; Obj *obj; wchar_t* name; .)
+=                        (. type = undef; .)
+  ( Ident<name>          (. obj = tab->Find(name); type = obj->type;
+                            if (obj->kind == var) {
+															if (obj->level == 0) gen->Emit(LOADG, obj->adr);
+															else gen->Emit(LOAD, obj->adr);
+                            } else Err(L"variable expected"); .)
+  | number               (. swscanf(t->val, L"%d", &n);	//n = Convert.ToInt32(t->val); 
+                            gen->Emit(CONST, n); type = integer; .)
+  | '-'
+    Factor<type>         (. if (type != integer) {
+                              Err(L"integer type expected"); type = integer;
+                            }
+                            gen->Emit(NEG); .)
+  | "true"               (. gen->Emit(CONST, 1); type = boolean; .)
+  | "false"              (. gen->Emit(CONST, 0); type = boolean; .)
+  ).
+/*------------------------------------------------------------------------*/
+Ident<wchar_t* &name>
+= ident                  (. name = coco_string_create(t->val); .).
+/*------------------------------------------------------------------------*/
+MulOp<int &op>
+=                        (. op = -1; .)
+  ( '*'                  (. op = times; .)
+  | '/'                  (. op = slash; .)
+  ).
+/*------------------------------------------------------------------------*/
+ProcDecl                 (. wchar_t* name; Obj *obj; int adr; .)
+= "void"
+  Ident<name>            (. obj = tab->NewObj(name, proc, undef); obj->adr = gen->pc;
+                            if (coco_string_equal(name, L"Main")) gen->progStart = gen->pc; 
+                            tab->OpenScope(); .)
+  '(' ')'
+  '{'                    (. gen->Emit(ENTER, 0); adr = gen->pc - 2; .)
+  { VarDecl | Stat }
+  '}'                    (. gen->Emit(LEAVE); gen->Emit(RET);
+                            gen->Patch(adr, tab->topScope->nextAdr);
+                            tab->CloseScope(); .).
+/*------------------------------------------------------------------------*/
+RelOp<int &op>
+=                        (. op = -1; .)
+  ( "=="                 (. op = equ; .)
+  | '<'                  (. op = lss; .)
+  | '>'                  (. op = gtr; .)
+  | "!="		 (. op = ne;  .)
+  | "<="		 (. op = leq;  .)
+  | ">="		 (. op = geq;  .)
+  ).
+/*------------------------------------------------------------------------*/
+SimExpr<int &type>       (. int type1, op; .)
+= Term<type>
+  { AddOp<op>
+    Term<type1>      (. if (type != integer || type1 != integer) 
+                              Err(L"integer type expected");
+                            gen->Emit(op); .)
+	}.
+/*------------------------------------------------------------------------*/
+Stat                     (. int type, type2, type3; wchar_t* name; Obj *obj; int adr, adr2, loopstart, loopstart2; .)
+= Ident<name>            (. obj = tab->Find(name); .)
+	"="
+  (                   (. if (obj->kind != var) Err(L"cannot assign to procedure"); .)
+		Expr<type> ';'
+											   (. if (type != obj->type) Err(L"incompatible types");
+													  if (obj->level == 0) gen->Emit(STOG, obj->adr);
+													  else gen->Emit(STO, obj->adr); .)
+	| 
+	'(' 
+	(
+	')' ';'          (. if (obj->kind != proc) Err(L"object is not a procedure");
+												  	gen->Emit(CALL, obj->adr); .)
+	|
+	  Expr<type>		 (. if (type != boolean) Err(L"boolean type expected richy ");
+							gen->Emit(FJMP, 0); adr = gen->pc -2;.)
+	  ")"
+
+	  "?"
+	  Expr<type2>		(. if (type2 != obj->type) Err(L"incompatible types richy");	 
+														  if (obj->level == 0) gen->Emit(STOG, obj->adr);
+														  else gen->Emit(STO, obj->adr); 
+				gen->Emit(JMP, 0); adr2 = gen->pc - 2; gen->Patch(adr, gen->pc); adr = adr2;.)
+
+	  ":"
+	  Expr<type3>		(. gen->Patch(adr, gen->pc); if(type3 != obj->type) Err(L"incompatible types richy");	 
+														  if (obj->level == 0) gen->Emit(STOG, obj->adr);
+														  else gen->Emit(STO, obj->adr); .)
+	";"			(. gen->Patch(adr, gen->pc); .)
+	)
+	)
+
+| "if" 
+	'(' Expr<type> ')' (. if (type != boolean) Err(L"boolean type expected");
+													  gen->Emit(FJMP, 0); adr = gen->pc - 2; .)
+	Stat
+	[ "else"               (. gen->Emit(JMP, 0); adr2 = gen->pc - 2;
+													  gen->Patch(adr, gen->pc);
+													  adr = adr2; .)
+		Stat 
+	]                      (. gen->Patch(adr, gen->pc); .)
+
+| "while"                (. loopstart = gen->pc; .)
+	'(' Expr<type> ')' (. if (type != boolean) Err(L"boolean type expected");
+													  gen->Emit(FJMP, 0); adr = gen->pc - 2; .)
+	Stat                   (. gen->Emit(JMP, loopstart); gen->Patch(adr, gen->pc); .)
+
+| "for"			
+	'('
+	Stat	(. loopstart = gen->pc;.)
+	Expr<type> 	(.if (type != boolean) Err(L"boolean type expected");
+										gen->Emit(FJMP, 0); adr= gen->pc -2; .)
+	";"	(. gen->Emit(JMP, 0); adr2 = gen->pc - 2;loopstart2 = gen->pc;.)
+	Stat	(. gen->Emit(JMP, loopstart); .)
+	')'	(. gen->Patch(adr2, gen->pc); .)
+		Stat	(. gen->Emit(JMP, loopstart2); gen->Patch(adr, gen->pc);	.)
+| "read"
+	Ident<name> ';'        (. obj = tab->Find(name);
+													  if (obj->type != integer) Err(L"integer type expected");
+													  gen->Emit(READ);
+													  if (obj->level == 0) gen->Emit(STOG, obj->adr);
+													  else gen->Emit(STO, obj->adr); .)
+
+| "write" 
+	Expr<type> ';'         (. if (type != integer) Err(L"integer type expected");
+												    gen->Emit(WRITE); .)
+
+| '{' { Stat | VarDecl } '}' .
+/*------------------------------------------------------------------------*/
+Taste                    (. wchar_t* name;
+                            InitDeclarations(); .)
+= "program"
+  Ident<name>            (. tab->OpenScope(); .)
+  '{'
+  { VarDecl }
+  { ProcDecl }
+  '}'                    (. tab->CloseScope(); .).
+/*------------------------------------------------------------------------*/
+Term<int &type>          (. int type1, op; .)
+= Factor<type>
+  { MulOp<op>
+    Factor<type1>        (. if (type != integer || type1 != integer) 
+                              Err(L"integer type expected");
+                            gen->Emit(op); .)
+	}.
+/*------------------------------------------------------------------------*/
+Type<int &type>
+=                        (. type = undef; .)
+ ( "int"                 (. type = integer; .)
+ | "bool"                (. type = boolean; .)
+ ).
+/*------------------------------------------------------------------------*/
+VarDecl                  (. wchar_t* name; int type; .)
+= Type<type>
+  Ident<name>            (. tab->NewObj(name, var, type); .)
+  { ',' Ident<name>      (. tab->NewObj(name, var, type); .)
+  } ';'.
+
+END Taste.

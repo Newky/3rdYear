@@ -1,0 +1,146 @@
+s: Fast Ethernet
+
+Slot time stays at 512 bits to avoid changes.
+
+Transmission speed increases by an order of magnitute 
+
+Taking into account delays in repeaters, interfaces and time to transmit a jam signal
+	reduces the practical length to 250m
+		100m from a node to the hub
+
+Protocol is backward compatible and uses the same.
+	Wiring system - Star Topology
+
+	Medium Access Control (MAC) protocol
+
+	Frame formats.
+
+100 Base-Tx
+
+Uses Category 5 UTP cabling.
+
+Max Segment length is 100m
+
+Requires 2 twisted pairs per station
+One to the hub and one from it.
+
+Half-duplex transmission.
+	Collisions are deteted when the transmitting station (or hub) detects a signal on the receive pair when it is transmitting on the transmit pair.
+
+sect: Repeater Hubs
+
+A fast Ethernet repeater has multiple shared ports.
+	Ports that are on the same collision domain.
+
+<diagram here>
+
+Second Floor
+|	Lan Switch	Class 1 repeater
+|	[===] -------> [====]
+|
+|
+|
+|
+(_____________________________________________
+(
+|
+|
+|
+|
+|
+|
+|
+
+LAN Switching.
+
+A switch makes forwarding decision based on link-layer addresses.
+	Decision on layer 2 rather than layer 3
+	Avoids the proccessing overhead inherent in routers.
+
+DIV SHOULD HAVE BEEN LISTENING AND NOT PLAYING ANGRY BIRDS.. LAYER 1 NEWB.
+
+Trying to switch things in the optical domain.
+
+Routers are (s)layer 3 devices.
+
+Each frame sent by a device on a LAN carries the link address of the sender in the source address field.
+
+By listening to all frames a switch can quickly determine which devices are connected to which port.
+
+When a device moves or topologis change
+	Switch can automatically update its internal tables by this learning device
+
+Reduces the sharing of LAN media.
+	By keeping traffic to the segments for which its destined.
+
+sect: Ethernet Switch
+
+An Ethernet switch is a fast multi port device.
+	Capable of quickly switching packets on the fly between multiple ethernet collision domains.
+
+An Ethernet switch divides the LAN into many small segments
+
+Instead of sharing the limited capacity(10/100 Mbps) with many computers.
+	Each computer or small group of computers can have a dedicated segment connected to a high-capacity Ethernet switch.
+
+sect: Gigabit Ethernet (802.3z)
+
+Need for higher data rates has resulted in the design of Gigabit Ethernet protocol.
+	1000 mbps
+
+Gigabit Ethernet has two approaches for media access control.
+
+FIBER.
+
+Half Duplex
+	Uses CSMA/CD
+	Max Network length is totally dependent on min frame size.
+	Three methods defined.
+		traditional, carrier extension, frameburst.
+
+Half Duplex Mac
+
+Traditional
+	Min frame size is 512 bits
+	Slot time = 0.512us
+	Max Length = 25m
+	May only be suitable to connect machine in a room
+
+Carrier Extension
+	To allow for a longer network we increase min frame size
+		512 bytes or 4096 bits
+	Min frame size is 8 times longer than traditional Ethernet
+		Station must pad frames less than 4096 bits
+	Max Length of network is 200m
+		100m from station to hub.
+
+Half Duplex Mac 2
+ 
+Frame bursting
+	Carrier Extension is inefficient if we have a series of short frames to send
+	Instead of adding an extension to each frame
+		Multiple frames are packaged together and sent
+		Padding is added between the frame.
+	
+Station first sends only one frame with an extension.
+	If a collision occurs during the transmission of this frame a jam signal is sent.
+
+If there is no collision the station sends the rest of the frames
+	Called a burst frame
+	Max length 8192 bytes or 65536 bits.
+
+Full Duplex MAC
+
+Allows for traffic in both directions simulataneously (spelling?).
+	Uses a switch to connect computers or other switches.
+		Most implementation of Gigabit Ethernet make use of this approach.
+
+FIBER. its in cereal is it not?
+
+MAC protocol does not make use of CSMA/CD
+	Collisions cannot take place. (what if u wer driving with your network and u crashed? jus something to think about.)
+
+	Maximum length of cable is now determined solely by signal strength issues.
+
+
+

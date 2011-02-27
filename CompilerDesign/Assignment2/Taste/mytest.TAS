@@ -1,0 +1,43 @@
+
+
+program mytest {
+	int i;
+	
+	void Foo() {
+
+		int a;
+		int b;
+		a := 0;
+		b := 2;
+		int max;
+		
+		if (a > b) max = a; else max = b;
+		write max;
+	}
+  
+  void SumUp() {
+  	int sum;
+    sum = 0;
+    while (i > 0) { sum = sum + i; i = i - 1; }
+    write sum;
+  }
+
+
+void Test2(){
+      		int a;
+		int b;
+		int max;
+
+		 a := 1; 
+		 b := 0;
+		max := a < b ? a : b;
+		write max;
+   }
+    
+	void Main() {
+  	
+	Test2();
+  	}
+  }
+
+

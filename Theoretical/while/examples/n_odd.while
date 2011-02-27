@@ -1,0 +1,14 @@
+/*
+ * Assignment 2
+ * Compute sum of n natural numbers
+ * Student Name: Richard Delaney
+ * Student Number: 08479950
+ */
+i := 0;
+sum := 0;
+curr := 1;
+while (i <= n) do {
+  sum := sum + curr;
+  curr := curr +2;
+  i := i + 1
+}

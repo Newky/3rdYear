@@ -1,0 +1,89 @@
+#include<stdio.h>
+#include<math.h>
+#include<map>
+#include<stdio.h>
+#include<map>
+#include<string>
+using namespace std;
+COMPILER Simple
+
+	map<string,int> *tab;
+CHARACTERS
+	digit = '0' .. '9'.
+	letter = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".
+
+TOKENS
+	ident  = letter {letter | digit}.
+	number = digit{digit}.
+
+IGNORE '\r' + '\n'
+
+PRODUCTIONS
+	Simple			
+	=
+	{Write | VarDecl | Halt}
+	.
+	Write			(. int n; .)
+	=
+	"display"
+		Expr<n>
+	    [	
+	    ":hex;"		(. printf("0x%x\n", n); .)	
+	    |
+	    ":oct;"		(. printf("0%o\n",n); .)
+	    |
+	    ";"			(. printf("%d\n", n); .)
+	    ]
+	
+	VarDecl			(. char * name;int n; .)
+	=
+	Ident<name>
+	":="
+	Expr<n>			(. printf("Assigned %d to %s\n", n, name);tab->insert(pair<string, int>(name, n));.)
+	";"
+	.
+	Halt
+	=
+	"halt"			(. exit(0); .)
+	.
+	Ident<char* &name>
+	=
+	ident			(. name = coco_string_create_char(t->val);.)
+	.
+	
+	/*-------------------------------------------------------*/	
+	Expr<int &n>		(. int n1; .)
+	= Term<n>
+	{ "+"
+	 Term<n1>		(. n = n + n1; .)
+	 | '-'
+	 Term<n1>		(. n = n - n1; .)
+	}.
+	/*-------------------------------------------------------*/	
+	Term<int &n>		(. int n2; .)
+	=
+	Factor<n>		
+	{ 
+	 "*"
+	  Factor<n2>		(. n = n * n2; .)
+	  |
+	  "mod"
+	  Factor<n2>		(. n = n % n2; .)
+	}
+	.
+	Factor<int &n>		(. int n3; .)
+	=
+	Expo<n>
+	{
+		'^'
+		 Expo<n3>		(. n = pow(n,n3); .)
+	}
+	.
+	/*-------------------------------------------------------*/	
+	Expo<int &n>		(.  char * name; .)		
+	= Ident<name>		(. n = tab->find((string)name)->second;	.)
+	|
+	number		(. swscanf(t->val, L"%d", &n); .)
+	| "(" Expr<n> ")"
+	.
+END Simple.

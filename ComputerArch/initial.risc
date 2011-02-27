@@ -1,0 +1,45 @@
+add r0,#256,r1
+
+;registers 26 -31 used for input
+;i = r26
+;j = r27
+;k = r17
+;return_address = r18
+;int p (int i, int j);
+P:	add r26, r27, r17
+	sll r17,#2,r17
+	sub r17,#1,r17
+	ret r24, #0
+	add r0, r17, r2
+
+;i = r26
+;int q(int i);
+Q:	add r0, r1, r10 
+;pipelining
+	call r24, P
+	sub r0, r26, r1
+;pipelining
+	ret r23, #0
+	add r0, r0, r0
+
+;n = r26
+;int f(int n)	
+;if we add n to 0 and neg flag is set, then negative.. OBVIOUSLY.. urgh.
+P:	jmp neg, else
+	add r0,r26,r0 {N}
+	;
+	;pipelining
+	call r25, Fa
+	sub r26, #1, r10
+	;pipelining
+	ret 25, #0
+	mul r2,r26,r2
+
+else:	ret 25,#0
+	add r0, #1, r2
+
+
+
+
+
+

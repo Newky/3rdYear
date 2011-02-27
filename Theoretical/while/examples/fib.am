@@ -1,0 +1,49 @@
+/*
+ * Compute the Fibonacci series
+ *
+ *   0  1  2  3  4  5   6   7
+ *   1, 1, 2, 3, 5, 8, 13, 21, ...
+ *
+ * We compute the n'th value of this series by keeping two variables:
+ *
+ *   fib   The current Fibonacci number
+ *   fib'  The next Fibonacci number
+ *
+ * To compute the n'th Fibonacci number, use
+ *
+ *   -inline PUSH 7:STORE n --load examples/fib.am --big-step-am 
+ */
+/* Initialize fib and fib' to 1 */ 
+PUSH 1:
+STORE fib:
+PUSH 1:
+STORE fib':
+LOOP
+(
+  /* while n > 0, i.e. !(n <= 0) */
+  PUSH 0:
+  FETCH n:
+  LE:
+  NEG
+,
+  /* 
+   * We effectively do
+   *
+   * tmp  := fib' 
+   * fib' := fib + fib' 
+   * fib  := tmp
+   *
+   * but we keep 'tmp' on the stack
+   */
+  FETCH fib':
+  FETCH fib:
+  FETCH fib':
+  ADD:
+  STORE fib':
+  STORE fib:
+  /* n := n - 1 */
+  PUSH 1:
+  FETCH n:
+  SUB:
+  STORE n
+)

@@ -1,0 +1,6 @@
+/*
+*Tutorial 2
+*/
+fac:=0;
+n:=1;
+fac := fac && 1

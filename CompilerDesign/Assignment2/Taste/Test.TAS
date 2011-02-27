@@ -1,0 +1,35 @@
+// This is a test program which can be compiled by the Taste-compiler.
+// It reads a sequence of numbers and computes the sum of all integers 
+// up to these numbers.
+
+program Test {
+	int i;
+	void Main(){
+		int sum;
+		sum := 101;
+		int arr[10];
+		arr[1] := 5;
+		unless(sum == 101){
+			sum := 100;
+		}
+		/*switch(sum){
+			case 45:
+				sum := sum + 2;
+				break;
+			case 101:
+				sum := sum + arr[1];
+				break;
+			case 40:
+				sum := sum + 20;
+				break;
+			default:
+				sum := sum + 5;
+				break;
+		}*/
+		write sum;
+		sum := (sum > 100) ? 100 : 20; 
+		sum ++;
+		write sum;
+	}
+}
+

@@ -1,0 +1,2 @@
+Using finite state techniques, design a lexical analyser to convert integer constants in the range -2,147,483,648 .. 2,147,483,647 (i.e -2^31 .. 2^31 -1)
+into lexical tokens where the numeric value of each token is stored in 32-bits using two's complement representation. The analyser should be coded in C or C++ and its operations checked against a set of test inputs.

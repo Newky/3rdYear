@@ -1,0 +1,34 @@
+\documentclass{article}
+\title{ Context Analysis}
+\begin{document}
+
+
+\section*{ Use of the system}
+
+
+The system will be used to maintain a person's movie collection, The person should be able to easily search for their movies through this system. An intuitive searching system which easily maintains an index on a large store of information, As I've addressed already, I decided to go for XML storage as this eliminates dependencies on lightweight database installation and makes the system very portable across different devices and operating systems.
+
+
+
+I've decided to go also for a single user system as logically I see no usage in having multiple users being able to access it at the same time, as it will not be used frequently enough to require multiple users at once.
+
+
+
+Through my design, I see this as a sure way for a person to maintain manage and categorise their movie collection. I have designed it in a generic fashion which would mean adding the ability to manage items of any type would be a matter of simply making a new container class for that item, and these could then be easily ported into the existing system.
+
+
+
+Through this easy design it also allows for future expansion into such things as syncronising a user's collection with an internet service as this would simply be another class which generates a html file from the xml collection.
+
+
+
+\section*{ Domain for use}
+
+
+I designed the system primarily for home usage, and as such it is single user, simple interface, which does well what it is meant to. The design allows for extension so the primary use could be altered in the future to allow for cataloging of different items or perhaps an alternate backend storage means.
+
+
+
+The modular build of the system allows for easy access to the key functions of the system through classes which are inherited from other classes which themselves do the hard work. For instance a GUI factory class is used as a basis or model for each window/dialog in the project, and each of the windows which are used within in the project inherit from this.
+
+\end{document}

@@ -1,0 +1,51 @@
+$CX /* pragmas - generate compiler, and use C++ classes */
+
+COMPILER Calc
+
+	#include <stdio.h>
+	#include <stdlib.h>
+
+	CHARACTERS
+		digit = "0123456789" .
+		cr = '\r'.
+		tab = '\t'.
+		lf= '\n'.
+
+	TOKENS
+	  number = digit { digit } .
+		
+	PRAGMAS
+		page = "page" . (. printf("\f"); .)
+
+	IGNORE cr + lf + tab
+
+	PRODUCTIONS
+	Calc
+	=			(. double total = 0.0, sub; .)			
+	WEAK "clear"
+	{ Subtotal<sub>		(. total += sub; .)
+	} SYNC "total"		(. printf("total: %5.2f\n", total); .)
+	.
+
+	Subtotal<double &s>
+	=			(. double r; .)
+	 Range<s>
+	 { WEAK "+" Range<r>	(. s += r; .)
+	 } SYNC
+	 ("accept"		(. printf("subtotal: %5.2f\n", s); .)
+	 | "cancel"		(. s = 0.0; .)
+	 ) .
+
+	Range<double &r>
+	=			(. double low, high; .)
+	Amount<low>		(. r = low; .)
+	[ ".." Amount<high>	(. if (low > high) SemError(200);
+				   else while (low < high)
+				   { low++; r += low; } .)
+	] .
+
+	Amount<double &a>
+	= number		(. char str[100];
+				   LexString(str, 100);
+				   a = atof(str); .) .
+END Calc.

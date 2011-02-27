@@ -1,0 +1,360 @@
+#include "SymbolTable.h"
+#include "CodeGenerator.h"
+#include "wchar.h"
+COMPILER Taste
+
+
+	int // operators
+	  plus, minus, times, slash, equ, lss, gtr, ne, leq, geq;
+
+	int // types
+	  undef, integer, boolean, character;
+
+	int // object kinds
+	  var, proc;
+
+	int // opcodes
+	  ADD,  SUB,   MUL,   DIV,   EQU,  LSS, GTR, NEG, NE,LEQ,GEQ,
+	  LOAD, LOADG, STO,   STOG,  CONST,
+	  CALL, RET,   ENTER, LEAVE,
+	  JMP,  FJMP,  READ,  WRITE, WRITEC; 
+	
+	SymbolTable   *tab;
+	CodeGenerator *gen;
+
+	void Err(wchar_t* msg) {
+		errors->Error(la->line, la->col, msg);
+	}
+
+	void InitDeclarations() { // it must exist
+		plus = 0; minus = 1; times = 2; slash = 3; equ = 4; lss = 5; gtr = 6; ne = 8; leq = 9;geq = 10; // operators
+		undef = 0; integer = 1; boolean = 2; character=3; // types
+		var = 0; proc = 1; // object kinds
+
+		// opcodes
+		ADD  =  0; SUB   =  1; MUL   =  2; DIV   =  3; EQU   =  4; LSS = 5; GTR = 6; NEG = 7;NE = 8; LEQ =9; GEQ = 10;
+		LOAD =  11; LOADG =  12; STO   = 13; STOG  = 14; CONST = 15;
+		CALL = 16; RET   = 17; ENTER = 18; LEAVE = 19;
+		JMP  = 20; FJMP  = 21; READ  = 22; WRITE = 23; WRITEC = 24;
+	}
+  
+/*--------------------------------------------------------------------------*/
+CHARACTERS
+  letter = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".
+  digit = "0123456789".
+  cr  = '\r'.
+  lf  = '\n'.
+  tab = '\t'.
+
+TOKENS
+  ident  = letter {letter | digit}.
+  number = digit {digit}.
+
+COMMENTS FROM "/*" TO "*/" NESTED
+COMMENTS FROM "//" TO cr lf
+
+IGNORE cr + lf + tab
+
+
+
+PRODUCTIONS
+/*------------------------------------------------------------------------*/
+AddOp<int &op>
+=                        (. op = -1; .)
+  ( '+'	                 (. op = plus; .)
+  | '-'                  (. op = minus; .)
+  ).
+/*------------------------------------------------------------------------*/
+Expr<int &type>          (. int type1, op, adr;.)
+= SimExpr<type>
+  [ RelOp<op>
+    SimExpr<type1>       (. if (type != type1) Err(L"incompatible types");
+                            gen->Emit(op); type = boolean; .)
+  ]. 
+/*------------------------------------------------------------------------*/
+Factor<int &type>        (. int n; Obj *obj; wchar_t* name; .)
+=                        (. type = undef; .)
+  ( Ident<name> 
+    
+  			 (. obj = tab->Find(name); type = obj->type;
+                            if (obj->kind == var) {
+															if (obj->level == 0) gen->Emit(LOADG, obj->adr);
+															else gen->Emit(LOAD, obj->adr);
+                            } else Err(L"variable expected"); .)
+  | number               (. swscanf(t->val, L"%d", &n);	//n = Convert.ToInt32(t->val); 
+                            gen->Emit(CONST, n); type = integer; .)
+  | '-'
+    Factor<type>         (. if (type != integer) {
+                              Err(L"integer type expected Factor"); type = integer;
+                            }
+                            gen->Emit(NEG); .)
+  | "true"               (. gen->Emit(CONST, 1); type = boolean; .)
+  | "false"              (. gen->Emit(CONST, 0); type = boolean; .)
+  | "'"
+    ident		(. swscanf(t->val, L"%c", &n);	
+                            gen->Emit(CONST, n); type = character; .)
+    "'"
+  			(. /*
+This is to allow the user to define characters I use ident in between single quotes to define what a character should look like on input.
+  			*/.)
+  ).
+
+/*------------------------------------------------------------------------*/
+Ident<wchar_t* &name>	(. int n; .)
+= ident                  (. name = coco_string_create(t->val); .)
+	{
+	'['
+  	number          (.  swscanf(t->val, L"%d", &n);
+  				int copy = n;
+  				int width = 1;
+  				copy = copy / 10;
+  				while(copy > 0) {width++;copy=copy/10;}
+				char number[strlen(coco_string_create_char(name))+width+1];
+				sprintf(number, "%s%d?", coco_string_create_char(name), n);
+				name = coco_string_create(number);
+  				.)
+  	']'
+  	(. /*
+		This is my rather hacky way of doing arrays, I get a number using number, calculate the width of that number, and change the string accordingly to match, I then append that number to the end of the string using sprintf and pass this name up. This allows for a very low level (and simplistic implementation of arrays) but it also allows for very easily implementing them every where an Ident is implemented.
+  	*/ .)
+    }
+    .
+/*------------------------------------------------------------------------*/
+MulOp<int &op>
+=                        (. op = -1; .)
+  ( '*'                  (. op = times; .)
+  | '/'                  (. op = slash; .)
+  ).
+/*------------------------------------------------------------------------*/
+ProcDecl                 (. wchar_t* name; Obj *obj; int adr; .)
+= "void"
+  Ident<name>            (. obj = tab->NewObj(name, proc, undef, 0); obj->adr = gen->pc;
+                            if (coco_string_equal(name, L"Main")) gen->progStart = gen->pc; 
+                            tab->OpenScope(); .)
+  '(' ')'
+  '{'                    (. gen->Emit(ENTER, 0); adr = gen->pc - 2; .)
+  { VarDecl | Stat }
+  '}'                    (. gen->Emit(LEAVE); gen->Emit(RET);
+                            gen->Patch(adr, tab->topScope->nextAdr);
+                            tab->CloseScope(); .).
+/*------------------------------------------------------------------------*/
+RelOp<int &op>
+=                        (. op = -1; .)
+  ( "=="                 (. op = equ; .)
+  | '<'                  (. op = lss; .)
+  | '>'                  (. op = gtr; .)
+  | "!="		 (. op = ne;  .)
+  | "<="		 (. op = leq;  .)
+  | ">="		 (. op = geq;  .)
+  ).
+/*------------------------------------------------------------------------*/
+SimExpr<int &type>       (. int type1, op; .)
+= Term<type>
+  { AddOp<op>
+    Term<type1>      (. if ((type != integer && type != character) || (type1 != integer && type != character)) 
+                              Err(L"integer type expected SimExpr");
+                            gen->Emit(op); .)
+	}.
+/*------------------------------------------------------------------------*/
+Stat                     (. int type, type2, type3,n; wchar_t* name; Obj *obj; int adr, adr2, loopstart, loopstart2; .)
+= Ident<name>           (. obj = tab->Find(name); .) 
+(
+	":="
+  (                   (. if (obj->kind != var) Err(L"cannot assign to procedure");
+  			if(obj->constant >= 2) Err(L"cannot assign to constant");
+  			if(obj->constant == 1) obj->constant ++;.)
+  			(. /*
+				These two constant blocks are used to define constant assignment and restrict it so that they can only get assigned to once, this is done above with 1 = Const unset and 2 = Const set.
+  			*/ .)
+		Expr<type> ';'
+											   (. if (type != obj->type) Err(L"incompatible types");
+													  if (obj->level == 0) gen->Emit(STOG, obj->adr);
+													  else gen->Emit(STO, obj->adr); .)
+	| 
+	'(' 
+	  Expr<type>		 (. if (type != boolean) Err(L"boolean type expected richy ");
+							gen->Emit(FJMP, 0); adr = gen->pc -2;.)
+	  ")"
+
+(. /*
+	Evaluate the boolean in the conditional, if False Jump to an undefined place, this will be patched in the second Expr, else fall through to first expr
+*/ .)
+	  "?"
+	  Expr<type2>		(. if (type2 != obj->type) Err(L"incompatible types richy");	 
+														  if (obj->level == 0) gen->Emit(STOG, obj->adr);
+														  else gen->Emit(STO, obj->adr); 
+				gen->Emit(JMP, 0); adr2 = gen->pc - 2; gen->Patch(adr, gen->pc); adr = adr2;.)
+
+(. /*
+		After this expression we want to just jump to the end of the expression after we've stored the value of Expr2 in the relevant Object
+*/ .)
+	  ":"
+	  Expr<type3>		(. gen->Patch(adr, gen->pc); if(type3 != obj->type) Err(L"incompatible types richy");	 
+														  if (obj->level == 0) gen->Emit(STOG, obj->adr);
+														  else gen->Emit(STO, obj->adr); .)
+(. /*
+	Notice how the addrees from the original boolean expression is patched down to this expr. and below the first Expr jump location is patched underneath so that it can jump out of the expression.
+*/ .)
+	";"			(. gen->Patch(adr, gen->pc); .)
+  )
+|
+	 		(. //Increment Variable
+			if (obj->kind != var) Err(L"cannot assign to procedure");
+  			if(obj->constant > 1) Err(L"cannot increment a constant");
+  			gen->Emit(CONST, 1);
+  			gen->Emit(LOAD, obj->adr);
+  			 .)
+  			 (. /*
+			This does the ++ and -- operations, for each of these statements there needs to be a constant 1 loaded and also the address of the object to be stored also needs to be put in there.
+  			 */ .)
+	(
+  	"++"		(.gen->Emit(ADD);.)
+	|
+	"--"		(.gen->Emit(SUB);
+  			.)
+  			(. /*
+			These two conditions either emits an add op or a sub op.
+  			*/ .)
+
+	)		(.gen->Emit(STO, obj->adr);.)
+	";"
+|
+
+	'('')'           (. if (obj->kind != proc) Err(L"object is not a procedure");
+												  	gen->Emit(CALL, obj->adr); .)
+
+";"
+)
+				
+| "if" 
+	'(' Expr<type> ')' (. if (type != boolean) Err(L"boolean type expected");
+													  gen->Emit(FJMP, 0); adr = gen->pc - 2; .)
+	Stat
+	[ "else"               (. gen->Emit(JMP, 0); adr2 = gen->pc - 2;
+													  gen->Patch(adr, gen->pc);
+													  adr = adr2; .)
+		Stat 
+	]                      (. gen->Patch(adr, gen->pc); .)
+| "unless"
+	'(' Expr<type> ')' (. if (type != boolean) Err(L"boolean type expected");
+													  gen->Emit(FJMP, 0); adr = gen->pc - 2; .)
+			      (. gen->Emit(JMP, 0); adr2 = gen->pc -2;	.)	
+	                      (. gen->Patch(adr, gen->pc); .)
+	Stat		      (. gen->Patch(adr2, gen->pc); .)
+| "while"                (. loopstart = gen->pc; .)
+	'(' Expr<type> ')' (. if (type != boolean) Err(L"boolean type expected");
+													  gen->Emit(FJMP, 0); adr = gen->pc - 2; .)
+	Stat                   (. gen->Emit(JMP, loopstart); gen->Patch(adr, gen->pc); .)
+
+| "for"			
+	'('
+	Stat	(. loopstart = gen->pc;.)
+	Expr<type> 	(.if (type != boolean) Err(L"boolean type expected");
+										gen->Emit(FJMP, 0); adr= gen->pc -2; .)
+	";"	(. gen->Emit(JMP, 0); adr2 = gen->pc - 2;loopstart2 = gen->pc;.)
+	Stat	(. gen->Emit(JMP, loopstart); .)
+	')'	(. gen->Patch(adr2, gen->pc); .)
+		Stat	(. gen->Emit(JMP, loopstart2); gen->Patch(adr, gen->pc);	.)
+		(. /*
+		This is my implementation of the for loop, I have done it as the classic C for loop. 
+		The flow is mentioned a lot in my design description, but basically It starts at Stat1, then evaluates Expr if false it quits the loop, it then moves to the body of the loop and does the stat, after the stat it moves to the Second stat which then evaluates the Expr again and repeats the loopuntil a false condition is found.
+		*/ .)
+| "read"
+	Ident<name> ';'        (. obj = tab->Find(name);
+													  if (obj->type != integer) Err(L"integer type expected");
+													  gen->Emit(READ);
+													  if (obj->level == 0) gen->Emit(STOG, obj->adr);
+													  else gen->Emit(STO, obj->adr); .)
+| "switch"
+	"("
+	Ident<name>	(. obj = tab->Find(name);int t=0;int adr2;
+				if(obj->type != integer) Err(L"integer type expected in write");
+				if(obj->level == 0) {gen->Emit(LOADG, obj->adr);;}
+				else {gen->Emit(LOAD, obj->adr);}
+				.)
+	")"
+	"{"
+	"case"
+	Expr<type> 	(. if(type != obj->type) Err( L" incompatible types in case" ); 
+			   gen->Emit(EQU); 
+			   gen->Emit(FJMP,0); 
+			   adr = gen->pc - 2;
+			   t=1;
+			  .)
+	":"
+	Stat		
+	"break"		(.loopstart=gen->pc;gen->Emit(JMP, 0);adr2=gen->pc-2;.)
+	";"
+	{
+		"case"		(. gen->Patch(adr, gen->pc); if(obj->level == 0) {gen->Emit(LOADG, obj->adr);;}
+				else {gen->Emit(LOAD, obj->adr);
+				}
+				 .)
+		Expr<type> 	(. if(type != obj->type) Err( L" incompatible types in case" ); 
+					   gen->Emit(EQU); 
+					   gen->Emit(FJMP,0); 
+					   adr = gen->pc - 2;
+					   t=1;
+					  .)
+		":"
+		Stat		
+		"break"		(.gen->Emit(JMP, loopstart);.)
+		";"
+		
+	}
+	{
+		"default:"	(. if(!t){gen->Patch(adr, gen->pc);t=1;}else{t=0;}.)
+		Stat
+		"break"	
+		";"
+	}
+	"}"		(. gen->Patch(adr2, gen->pc); .)
+| "write" 
+	Expr<type> ';'         (. if (type == integer) gen->Emit(WRITE);  
+					else if(type == character) gen->Emit(WRITEC);
+					else Err(L"integer type expected in write");
+												   .)
+(. /*
+Notice the if(type==character) in this example, I emit a new opcode called WRITEC this is basically just a revised WRITE except that it writes characters instead.
+*/ .)
+
+| '{' { Stat | VarDecl } '}' .
+/*------------------------------------------------------------------------*/
+Taste                    (. wchar_t* name;
+                            InitDeclarations(); .)
+= "program"
+  Ident<name>            (. tab->OpenScope(); .)
+  '{'
+  { VarDecl }
+  { ProcDecl }
+  '}'                    (. tab->CloseScope(); .).
+/*------------------------------------------------------------------------*/
+Term<int &type>          (. int type1, op; .)
+= Factor<type>
+  { MulOp<op>
+    Factor<type1>        (. if ((type == integer || type == character) && (type1 == integer || type1 == character)) 
+                            gen->Emit(op); 
+                              Err(L"integer type expected in Term");.)
+	}.
+/*------------------------------------------------------------------------*/
+Type<int &type>
+=                        (. type = undef; .)
+ ( "int"                 (. type = integer; .)
+ | "bool"                (. type = boolean; .)
+ | "char"		  (. type = character; .)
+ ).
+ /*------------------------------------------------------------------------*/
+VarDecl                  (. wchar_t* name; int type,constant=0;.)
+= 
+  {"const"		(. constant = 1;.)
+  }
+  Type<type>
+  Ident<name>            (. tab->NewObj(name, var, type, constant); .)
+(. /*
+Added a constant variable to account for const variables, notice how this is passed into the expression
+  */ .)
+  { ',' Ident<name>      (. tab->NewObj(name, var, type, constant); .)
+  } ';'
+  .
+  
+END Taste.

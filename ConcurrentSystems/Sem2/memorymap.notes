@@ -1,0 +1,60 @@
+2 parts of address spac
+indexes.
+	Often split into primary/secondary index.
+
+Just a primary index is impractical for 
+
+Primary/Secondary tables stored in physical memory/ not on disk.
+
+every process needs its own copy.
+
+
+process uses the ptb to find the correct table.
+the virtual address translation is done in hardware.
+
+3 memory accesses (one for each table and one for physical memory) assuming no page fault.
+
+offset within the physical page
+
+Translation Look aside buffer (TLB) to avoid 3 memory accesses.
+
+basically a cache for saving having to walk through the tree.
+
+combines index 1 and index 2 and stores the result of having walked through both trees.
+
+uses opposite of XOR to quickly compare.
+All are looked up in parallel
+
+Further optmisation can be used with 
+Large PTE/TLB Entries.
+
+Big entry such as the Kernel only take up one of the lines but would point to physical mapping.
+
+~BreakPoints~
+
+If you are debugging and want something to stop at a given instruction wat it usually does is replace that instruction with a trap instruction or some sort of stop control.
+
+Unix doesnt use the segment model, it uses a "flat" model
+
+~Integating MMU & Operating System~
+
+Different types of bits in PTE
+
+V = 1 (valid)
+
+Mem -> virtual to physical (easy)
+Lock -> keep the physical memory, don#t page out, used for special parts.
+Spy -> mapping a virtual address to a specific physical address (used in device registers, for instance ports)
+
+V = 0 
+
+NULL page not mapped to physical memory yet
+DISK 
+IOP indicates I/O operation is in progress
+SPT shared PTE
+
+IF entry is marked DISK, it will cause a PAGE fault so we have to make it, 
+
+it will go from DISK => IOP => MEM
+
+

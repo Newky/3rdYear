@@ -1,0 +1,70 @@
+#include "SymbolTable.h"
+#include "CodeGenerator.h"
+#include "wchar.h"
+
+COMPILER Display
+
+	int //operators
+	  plus, minus, times,slash, equ, gtr, lss;
+
+	int //Types
+	  undef, int, boolean;	
+
+	int //Object kinds
+	  var, proc;
+
+	int //Opcodes
+	  ADD,  SUB,   MUL,   DIV,   EQU,  LSS, GTR, NEG,
+	  LOAD, LOADG, STO,   STOG,  CONST,
+	  CALL, RET,   ENTER, LEAVE,
+	  JMP,  FJMP,  READ,  WRITE; 
+
+	SymbolTable   *tab;
+	CodeGenerator *gen;
+
+	void Err(wchar_t* msg) {
+		errors->Error(la->line, la->col, msg);
+	}
+
+	void InitDeclarations() { // it must exist
+		plus = 0; minus = 1; times = 2; slash = 3; equ = 4; lss = 5; gtr = 6; // operators
+		undef = 0; integer = 1; boolean = 2; // types
+		var = 0; proc = 1; // object kinds
+
+		// opcodes
+		ADD  =  0; SUB   =  1; MUL   =  2; DIV   =  3; EQU   =  4; LSS = 5; GTR = 6; NEG = 7;
+		LOAD =  8; LOADG =  9; STO   = 10; STOG  = 11; CONST = 12;
+		CALL = 13; RET   = 14; ENTER = 15; LEAVE = 16;
+		JMP  = 17; FJMP  = 18; READ  = 19; WRITE = 20;
+	}
+
+CHARACTERS
+
+  letter = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".
+  digit = "0123456789".
+  cr  = '\r'.
+  lf  = '\n'.
+  tab = '\t'.
+
+TOKENS
+  ident  = letter {letter | digit}.
+  number = digit {digit}.
+
+COMMENTS FROM "/*" TO "*/" NESTED
+COMMENTS FROM "//" TO cr lf
+
+IGNORE cr + lf + tab
+
+
+
+PRODUCTIONS
+/*------------------------------------------------------------------------*/
+/* Declaring a varible
+*/
+VarDecl                  (. wchar_t* name; int type; .)
+= Type<type>
+  Ident<name>            (. tab->NewObj(name, var, type); .)
+  { ',' Ident<name>      (. tab->NewObj(name, var, type); .)
+  } ';'.
+
+END Display.

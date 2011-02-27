@@ -1,0 +1,3 @@
+var := 3^2+1; mix := 34;
+b := 4;
+display var * b - mix;

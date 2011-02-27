@@ -1,0 +1,12 @@
+program TestMeth {
+
+	void Test(){
+		char word;
+		word := 'a';
+		write word;
+	}
+
+	void Main(){
+		Test();
+	}
+}

@@ -1,0 +1,18 @@
+
+// This is a test program which can be compiled by the Taste-compiler.
+// It reads a sequence of numbers and computes the sum of all integers 
+// up to these numbers.
+
+program Test {
+	int 
+		i, sum, limit;
+
+	void Main() {
+		sum = 0;
+		limit = 512;
+		for (i = 1; i < limit; i = i+1)
+			{ sum = sum + i }
+	}
+    
+}
+

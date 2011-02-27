@@ -1,0 +1,40 @@
+\documentclass{article}
+\title{ CS3041 Database Project Description}
+\author{ Richard Delaney 08479950}
+\date{ Nov/Dec '10}
+\begin{document}
+ \maketitle 
+
+
+\section*{ Application Description}
+
+
+The domain I have chosen for my database project is that of hotel benchmarking, There was a number of reasons I chose this area, Firstly, I work part-time with a company called CityOccupancy whose webservices offer hotel benchmarking nationally. I had a good starting knowledge of this area, and it would also be interesting to see what areas of the company could be bettered by a better database design. To understand the workings of the company, I'll describe in steps how the data from the hotel users are retreived and the different measurements and benchmarks used in the business.
+
+
+
+\begin{enumerate}
+\item  At the start of each week (officially Sunday, but often hotels won't enter until Monday morning) Each hotel submits data for that current week, the previous week and the next week to come.
+\item  Hotels enter data in two categorys, an occupancy (\%) of total rooms and a rate. The data is on a daily basis i.e for each week, each hotel will enter 21 days worth of data for both occupancy and rate. 
+\item  This data is then used to populate graphs and ranking tables to give hotels a view on how they are doing against the city.
+\end{enumerate}
+
+
+That is a description of how the data submittal part of the website operates, the actual benchmarks have the following rules:
+
+
+
+\begin{enumerate}
+\item  All averages must be weighted averages ( if a hotel in Cork has 70\% Occupancy and 500 rooms and another hotel has 90\% Occupancy but only 50 rooms)
+\item  The basis of the benchmarking is done over three categories, Occupancy, Rate and RevPAR.
+\item  RevPAR (revenue per available room) is Rooms Revenue / Rooms Available.
+\end{enumerate}
+
+
+Another aspect of the service is what we call CompSets or Comparison Sets. A hotel selects 4 or more other hotels in which to review themselves against. As a matter of Data Protection, No hotel can see any other hotels data, but through compset we give them an average value on how the compset is doing against its hotel and vice versa.
+
+
+
+The whole service is basically just a php frontend, which draws the data from the database, as a result the layout, efficiency and design of the database is key. 
+
+\end{document}

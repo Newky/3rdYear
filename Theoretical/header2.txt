@@ -1,0 +1,3 @@
+t: Theoretical Computer Science Assignment 2
+a: Richard Delaney 08479950
+d: 4 Nov 2010

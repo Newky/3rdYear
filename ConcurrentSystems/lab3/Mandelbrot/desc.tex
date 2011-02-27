@@ -1,0 +1,64 @@
+\documentclass{article}
+\title{ CS3014 Mandelbrot Set}
+\author{ Richard Delaney 08479950}
+\date{ Dec 8th 2010}
+\begin{document}
+ \maketitle 
+
+
+\section*{ Understanding the code}
+
+
+The first thing I did when I got this assignment was to experiment with the code we were given, 
+
+Firstly experimenting with different MAX\textunderscore DEPTH and ZOOM\textunderscore FACTOR variables, I then researched more into the mandlebrot set, the maths behind it and the challenge of optimising it. It seemed that the main challenges with the project was going to be getting to grips with the code, and getting a real knowledge of openMP and SSE across a number of areas, implementation and setup of compiler flags.
+
+
+
+\section*{ OpenMP}
+
+
+The first obvious step seemed to be to optimise using OpenMP, I experimented with a simple parallel for loop on the per pixel rendering in the main DEPTH loop. I had some issues with this, as the error messages were somewhat cryptic and suggested that I hadn't got the correct compiler flags, upon further inspection I realised that the problem was actually with my algorithm and that it wasn't directly parallizable. To rectify this, I initially transformed the two nested for loops into one for loop and calculated hx and hy according to that, but I then realised this was calculating hy HXRES(screen width size) too many times.
+
+
+
+I then moved it back to two for loops and made some changes to my openmp and tweaked it so that concurrency now worked. This alone gave me a significant speed up. I also made the parallel for have a dynamic schedule, this simple modification in my mind shows the power of OpenMP, a simple change like this although dynamic schedule has a setup time, made the testing a noticable faster time. For example in a final rendering with MAX\textunderscore DEPTH at 30, the dynamic schedule came out as making the simulation roughly 2 seconds faster. After getting a successful openmp simulation, the simulation was running at a significantly faster time.
+
+
+
+\section*{ SSE}
+
+
+My next move was to try SSE, this proved extremely difficult to get noticeable results quickly. After a few attempts at speeding up the member function, I finally hit on a solution. The member function takes in 2 m128's which hold the complex values for 4 pixel x and y's. The SSE instructions as we have discussed in class are extremely verbose, and tough to write out correctly. My main change came with how I deal with the iterations for four, Obviously I have to take account of the amount of iterations for all four. I make a new m128 called four\textunderscore iter which holds the iterations for each of the four complex values in the input m128's. The SSE instructions in general should be almost a 4 times increase in speed, and in my case showed a 3.5 times increase in speed using this way. Its worth noting that many attempts previous had actually slowed the simulation down, but this was as a result of unneeded calculations on my behalf. A solution for the verbose nature of SSE, I thought of but ultimately failed to implement was to operator overload the methods so that ordinary arithmetic operations would work, this would make nesting arithmetic m128 expressions a lot more pleasing to the eye.
+
+
+
+\section*{ Other little optimisations}
+
+
+Both of the previous optimisations brought the timings of the code to a far faster time. There was other little things I did that made the code slightly quicker than the original, although these are a little obvious, I think its worth including them in the report. My first modification when I had the SSE and OpenMP alterations done, was to compile using the -O3 flag, although this is such a small change, the speed up is quite significant.
+
+
+
+\section*{ Overall timing}
+
+
+As stoker was unable to deal with the graphical dependencies and the timings for everything was becoming increasingly slow as many people were logged in, I decided best to benchmark this on my system:
+
+
+
+For A Depth of 25:
+
+Original Code Timing:	27784930 microseconds
+
+Richy Code Timing:	2819631 microseconds
+
+
+
+It would take to long to test the original code on a big DEPTH, but my code ran 480 DEPTH in the following time:
+
+80730611 microseconds
+
+
+
+\end{document}

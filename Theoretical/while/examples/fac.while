@@ -1,0 +1,12 @@
+/*
+ * Compute factorial
+ *
+ * To compute the factorial of 5, use:
+ *
+ *   --inline n := 5 --load examples/fac.while --big-step-while
+ */
+fac := 1;
+while !(n <= 0) do {
+  fac := fac * n;
+  n := n - 1
+}

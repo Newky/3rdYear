@@ -1,0 +1,6 @@
+/* Pointer arithmetic */
+x := 10 ;
+y := 20 ;
+z := &x ;
+x := *(z + 1) ;
+*(z + 1) := 30

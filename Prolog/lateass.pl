@@ -1,0 +1,1 @@
+accept(Trans, Final, String).

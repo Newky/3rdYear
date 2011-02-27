@@ -1,0 +1,16 @@
+// This is a test program which can be compiled by the Taste-compiler.
+// It reads a sequence of numbers and computes the sum of all integers 
+// up to these numbers.
+program Test {
+	
+	void Main(){
+		int i, j, k;
+		i = 56;
+		j = 64;
+		k = 34;
+		write i;
+		write j*k;
+		write i*j*k;
+	}
+}
+

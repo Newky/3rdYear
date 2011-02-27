@@ -1,0 +1,16 @@
+Q2:
+
+6 Registers - 
+Depth: 172233
+Overflow:84398
+Underflow:84398
+
+8 Registers - 
+Depth:172233
+Overflow:83430 
+Underflow:83430 
+
+16 Registers - 
+Depth:172233
+Overflow:81534
+Underflow:81534

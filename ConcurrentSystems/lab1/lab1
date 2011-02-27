@@ -1,0 +1,76 @@
+3BA26 Lab 1: The Travelling Salesman
+
+Jim is a travelling salesman who must visit several cities around the
+country in a sales trip. Jim wants to minimize the total distance he
+travels, so he is looking for the shortest route that brings him to
+each city exactly once. He hopes that a computer might be able to
+help him find the shortest route.
+
+The travelling salesman problem is a classic computer science problem
+that is computationally intractable for large numbers of cities. For
+this reason, heuristics are normally used which are not guaranteed to
+find the shortest route, but instead try to find some appoximation of
+it. One of the most common approaches is the nearest neighbour heuristic.
+
+We have some existing code to implement the nearest neighbour
+heuristic.  Your job is to make it run fast on the machine
+stoker.cs.tcd.ie. The purpose of the exercise is to gain a better
+understanding of optimization and computer architecture by working
+with real code.
+
+The lab submission should take the form of a working, well-written,
+commented piece of code. The first page of the code should include a
+comment with a description of the efforts made to make the code
+efficient.
+
+The code to be optimized is in two files:
+https://www.cs.tcd.ie/David.Gregg/3ba26/labs/sales/sales.c
+https://www.cs.tcd.ie/David.Gregg/3ba26/labs/sales/mytour.c
+
+The first file is a test harness, which sets up the data, invokes
+your routine, checks that you get the same answer as the original
+code, and reports execution times. You should not modify the test
+harness file. When it comes to testing the speed of your code, we may
+even use a slightly different test harness file, but we will maintain
+the interfaces.
+
+Note that the files sales.c uses C maths libraries, and depending on
+your compiler, you may need to pass an additional parameter "-lm" to
+the compiler at the command line.
+
+The second file contains the function "my_tour". This is where you
+should write your code. In the version that you download from the
+website, this function simply calls simple_find_tour. But you should
+write your own code in here. You may want to base your code on
+simple_find_tour or you may want to write your own code entirely.
+
+Note that whatever code you write to compute your tour, you must get
+the same result as simple_find_tour. This means that you must use the
+nearest neighbour heuristic, and you must use the same starting city
+as simple_find_tour. The test harness checks that your code produces
+the same tour as simple_find_tour. We will avoid inputs where the
+distances between cities is the same (or almost the same) which might
+result in different answers due to order of evaluation or floating
+point imprecision.
+
+For testing the speed of your code, we will use a variety of problem
+sizes, and we may, potentially, use a different method for generating
+inputs than the current test harness. The machine is
+stoker.cs.tcd.ie. This machine has two processors.  Each processor has
+two out-of-order pipelined, superscalar cores.  Each core has its own
+L1 cache, and there is a single L2 cache that is shared by both cores
+on a single processor.
+
+You may use whichever C compiler flags you like for compiling your
+code.  The compiler and the flags should be documented in your code.
+
+The marks for this lab will come in two parts. Half the marks will be
+awarded for the code itself --- it's correctness, quality and the
+optimization ideas it contains. The other half of the marks will be
+based on its running time. The faster your code, the higher the mark
+you will get.
+
+You must submit a hard copy of your code to the Computer Science front
+office by 4pm on Wednesday 27th October, and you should get your
+submission recorded and stamped. On Thursday 28th October we will test
+the speed and correctness of the different entries.

@@ -1,0 +1,11 @@
+/*
+ * Pointer arithmetic! 
+ */
+/* We are going to store value "123" at a computed location in memory */
+PUSH 123:
+/* Compute the address 1 + 2 */
+PUSH 1:
+PUSH 2:
+ADD:
+/* And store 123 at the result */
+STORE
