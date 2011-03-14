@@ -67,10 +67,13 @@ class cache:
 		in 1 way 
 		shift_no is 7
 		'''
-		num_address = int(address, 16)
-
-		for i in range(0, shift_no):
-			num_address >>= 1;
+		if(self.way != 8):
+			num_address = int(address, 16)
+			for i in range(0, shift_no):
+				num_address >>= 1;
+		else:
+			num_address = int(address[:3], 16)
+			
 		return num_address
 
 	def check_set(self, set_var):

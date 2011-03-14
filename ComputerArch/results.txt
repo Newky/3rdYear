@@ -106,35 +106,35 @@ Hit:13 Miss:19
 8 Way Cache
 
 0000	0	Miss, added to cache	
-0004	0	Miss, added to cache	
-000c	0	Miss, added to cache	
+0004	0	HIT	
+000c	0	HIT	
 2200	0	Miss, added to cache	
 00d0	0	Miss, added to cache	
 00e0	0	Miss, added to cache	
 1130	0	Miss, added to cache	
 0028	0	Miss, added to cache	
-113c	0	Miss, added to cache, removed LRU
-2204	0	Miss, added to cache, removed LRU
-0010	0	Miss, added to cache, removed LRU
-0020	0	Miss, added to cache, removed LRU
+113c	0	HIT	
+2204	0	HIT	
+0010	0	Miss, added to cache	
+0020	0	HIT	
 0004	0	HIT	
-0040	0	Miss, added to cache, removed LRU
-2208	0	Miss, added to cache, removed LRU
-0008	0	Miss, added to cache, removed LRU
+0040	0	Miss, added to cache	
+2208	0	HIT	
+0008	0	HIT	
 00a0	0	Miss, added to cache, removed LRU
 0004	0	HIT	
 1104	0	Miss, added to cache, removed LRU
-0028	0	Miss, added to cache, removed LRU
+0028	0	HIT	
 000c	0	HIT	
 0084	0	Miss, added to cache, removed LRU
 000c	0	HIT	
 3390	0	Miss, added to cache, removed LRU
 00b0	0	Miss, added to cache, removed LRU
 1100	0	Miss, added to cache, removed LRU
-0028	0	Miss, added to cache, removed LRU
+0028	0	HIT	
 0064	0	Miss, added to cache, removed LRU
 0070	0	Miss, added to cache, removed LRU
 00d0	0	HIT	
-0008	0	Miss, added to cache, removed LRU
+0008	0	HIT	
 3394	0	Miss, added to cache, removed LRU
-Hit:5 Miss:27
+Hit:15 Miss:17
