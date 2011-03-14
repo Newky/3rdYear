@@ -6,6 +6,7 @@ class cache:
 		'''
 		Init array of size n * way
 		'''
+		print str(way) + " Way Cache"
 		self.store = []
 		#Invalid Data
 		self.n = n
@@ -77,18 +78,10 @@ class cache:
 		in this case u will get the set variable i.e if the address is 00c0 then u will get c
 		'''
 		full_byte = int(set_var, 16)
-		#full_byte = int(full_byte,2)
-		#print "full byte is "+ str(full_byte)
-		
 		'''	
 		We want to set the first Way bits to 0
 		d is c
 		'''
-		#for i in (0, 4+self.way):
-			#full_byte &= ~(1 << i);
-	
-		#print "full byte 2 is "+ str(full_byte)
-		#full_byte = int(full_byte, 10)
 		return full_byte % self.n
 
 	def print_cache(self):
@@ -115,7 +108,7 @@ def read_data(c):
 	f.close()
 
 if __name__ == "__main__":
-	c = cache(2, 16, 4)
+	c = cache(8, 16,1)
 	read_data(c)
 	c.print_ratio()
 
