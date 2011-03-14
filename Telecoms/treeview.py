@@ -1,18 +1,14 @@
 #!/usr/bin/env python
 #
-# [SNIPPET_NAME: Tree View Column]
-# [SNIPPET_CATEGORIES: PyGTK]
-# [SNIPPET_DESCRIPTION: Using tree view columns]
-# [SNIPPET_DOCS: http://www.pygtk.org/pygtk2tutorial/ch-TreeViewWidget.html, http://www.pygtk.org/docs/pygtk/class-gtktreeviewcolumn.html]
-
-# example treeviewcolumn.py
-
 import pygtk
 pygtk.require('2.0')
 import gtk
+import gtk_shorts
 import dbus
 import dbus.service
 from dbus.mainloop.glib import DBusGMainLoop
+import socket               # Import socket module
+
 
 class TreeViewColumnExample(dbus.service.Object):
 
@@ -30,7 +26,7 @@ class TreeViewColumnExample(dbus.service.Object):
     def __init__(self):
         # Create a new window
         self.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
-
+	self.window.set_size_request(900, 400)
         self.window.set_title("TreeViewColumn Example")
 	
         bus_name = dbus.service.BusName('org.newky.proxySpk', bus=dbus.SessionBus())
@@ -39,7 +35,20 @@ class TreeViewColumnExample(dbus.service.Object):
         #self.window.set_size_request(200, 200)
 
         self.window.connect("delete_event", self.delete_event)
+
+	menuBar = gtk.MenuBar()	
+
+	filemenu = gtk.Menu()
+	filem = gtk.MenuItem("Blacklist")
+	filem.set_submenu(filemenu)
 	
+	#blackl = gtk.MenuItem("Blacklist")
+	#blackl.connect("activate", get_blacklist_window)
+	filem.connect('activate', self.get_blacklist_window)
+	#filem.append(blackl)
+	menuBar.append(filem)
+	self.vbox = gtk.VBox(False, 0)
+	self.vbox.pack_start(menuBar, False, False, 0)
 	self.scrolled_window = gtk.ScrolledWindow(hadjustment=None, vadjustment=None)
 	#self.scrolled_window.set_policy(POLICY_ALWAYS, POLICY_ALWAYS)
 	self.scrolled_window.show()
@@ -77,35 +86,22 @@ class TreeViewColumnExample(dbus.service.Object):
         self.cell.set_property('cell-background', 'cyan')
         self.cell1.set_property('cell-background', 'pink')
         self.cell2.set_property('cell-background', 'white')
-
-
         # add the cells to the columns - 2 in the first
         #self.tvcolumn.pack_start(self.cellpb, False)
         self.tvcolumn.pack_start(self.cell, True)
         self.tvcolumn1.pack_start(self.cell1, True)
         self.tvcolumn2.pack_start(self.cell2, True)
-
-        # set the cell attributes to the appropriate liststore column
-        # GTK+ 2.0 doesn't support the "stock_id" property
-        #if gtk.gtk_version[1] < 2:
-            #self.tvcolumn.set_cell_data_func(self.cellpb, self.make_pb)
-        #else:
-            #self.tvcolumn.set_attributes(self.cellpb, stock_id=1)
-        self.tvcolumn.set_attributes(self.cell, text=0, cell_background_set=1)
+	self.tvcolumn.set_attributes(self.cell, text=0, cell_background_set=1)
         self.tvcolumn1.set_attributes(self.cell1, text=1,cell_background_set=2)
         self.tvcolumn2.set_attributes(self.cell2, text=2,cell_background_set=3)
-
         # make treeview searchable
         self.treeview.set_search_column(0)
-
         # Allow sorting on the column
         self.tvcolumn.set_sort_column_id(0)
-
         # Allow drag and drop reordering of rows
         self.treeview.set_reorderable(True)
-
-        self.window.add(self.scrolled_window)
-
+	self.vbox.add(self.scrolled_window)
+        self.window.add(self.vbox)
         self.window.show_all()
 
     @dbus.service.method('org.newky.proxySpk')
@@ -114,13 +110,18 @@ class TreeViewColumnExample(dbus.service.Object):
 	print "Trying to append something %s %s %s."%(self.method , self.path , self.protocol)
     	self.liststore.append([self.method, self.path, self.protocol, True])
 
-def main():
-    gtk.main()
+    def get_blacklist_window(self, widget , data= None):
+        text= gtk_shorts.getText()
+        print "Blacklist %s" %(text)
+	address = socket.gethostbyname(text)
+	f = open("black.list", "a")
+	f.write(address + ":localhost")
+	f.close()	
 
 if __name__ == "__main__":
     DBusGMainLoop(set_as_default=True)
     tvcexample = TreeViewColumnExample()
-    main()
+    gtk.main()
 
 
 
