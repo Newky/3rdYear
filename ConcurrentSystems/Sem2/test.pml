@@ -1,5 +1,5 @@
-proctype gcd(byte a, b){
-	byte t;
+proctype gcd(int a, b){
+	int t;
 	t=0;
 	do
 	:: b != 0 -> t = b; b = a % b; a = t;
@@ -8,5 +8,5 @@ proctype gcd(byte a, b){
 }
 
 init {
-	run gcd(12, 16);
+	run gcd(2322, 654);
 }

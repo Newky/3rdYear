@@ -1,0 +1,6 @@
+spin: phones.pml:25, Error: syntax error	saw 'keyword: if' near 'if'
+spin: phones.pml:65, Error: syntax error	saw 'an identifier' near 'call'
+-------------
+final state:
+-------------
+0 processes created
