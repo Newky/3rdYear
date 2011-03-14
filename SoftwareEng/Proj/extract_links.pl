@@ -14,7 +14,8 @@ if($mode){
 		print $file;
 	}
 	close (F_HTML);
-}else{
+}
+else{
 	open (F_HTML, "<", $html_file)  or  die "Failed to read file $html_file : $!";
 	while (<F_HTML>) {	
 		if(m/<a .*?>/){
@@ -22,7 +23,8 @@ if($mode){
 			$file =~ m/<a .*? href=(".*?")>(.*?)<\/a>/;
 			my $url = $1;
 			my $blurb = $2;
-			printf "%s<>%s\n" , $url, $blurb;
+			my $anchor = sprintf "<a href=%s>%s</a>", $url, $blurb;
+			printf "%s<SEP>%s\n" , $blurb, $anchor;
 		}
 	}
 	close (F_HTML);
