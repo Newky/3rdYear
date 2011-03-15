@@ -1,12 +1,12 @@
 %!PS-Adobe-3.0
-%%Title: pi.c
+%%Title: gcd.pml, phones.pml
 %%For: richy
 %%Creator: a2ps version 4.14
-%%CreationDate: Tue Feb  1 10:23:16 2011
+%%CreationDate: Tue Mar 15 10:07:35 2011
 %%BoundingBox: 24 24 571 818
 %%DocumentData: Clean7Bit
 %%Orientation: Landscape
-%%Pages: 1
+%%Pages: 2
 %%PageOrder: Ascend
 %%DocumentMedia: A4 595 842 0 () ()
 %%DocumentNeededResources: font Courier
@@ -757,125 +757,220 @@ llx lly 12 add translate
 /x0 x v get 3.362408 add sx cw mul add store
 /y0 y v get bfs th add sub store
 x0 y0 moveto
-(#include) K
-(<stdio.h>) p n
-(#include) K
-(<stdlib.h>) p n
-(#include) K
-(<pthread.h>) p n
-(#include) K
-(<time.h>) p n
-(#include) K
-(<math.h>) p n
-(#include) K
-(<) p
-(float) k
-(.h>) p n
-(#define) K
-( NUM_THREADS 5) p n
-() N
-(pthread_mutex_t mutex1 = PTHREAD_MUTEX_INITIALIZER;) N
-(int) k
-( count=0;) p n
-(int) k
-( isInside\() p
-(double) k
-( x, ) p
-(double) k
-( y\){) p n
+(proctype) K
+( gcd\() p
+(int) K
+( a, b\){) p n
 () S 8 T () S
-(double) k
-( h_squared = \(x*x\) + \(y*y\);) p n
-() S 8 T (h_squared = sqrt\(h_squared\);) N
+(int) K
+( t;) p n
+() S 8 T (t=0;) N
 () S 8 T () S
-(return) K
-( \(h_squared <= 1.00\);) p n
-(}) N
-() N
-(void) k
-( * calc_points\( ) p
-(void) k
-( * argument\){) p n
-() S 8 T () S
-(int) k
-( circle_count = 0, i;) p n
-() S 8 T () S
-(int) k
-( dart_temp = \() p
-(int) k
-(\) argument;) p n
-() S 8 T () S
-(for) K
-( \(i =0; i < \(dart_temp\); i++\) {) p n
-() S 8 T () S 16 T () S
-(double) k
-( random1 = rand\(\) / \(RAND_MAX +1.0\);) p n
-() S 8 T () S 16 T () S
-(double) k
-( random2 = rand\(\)  / \(RAND_MAX +1.0\);) p n
-() S 8 T () S 16 T (i = i + \(i - i\);) N
-() S 8 T () S 16 T () S
-(if) K
-(\(isInside\(random1, random2\)\)) p n
-() S 8 T () S 16 T () S 24 T (circle_count += 1;) N
-() S 8 T (}) N
-() S 8 T (pthread_mutex_lock\(&mutex1\);) N
-() S 8 T (count += circle_count;) N
-() S 8 T (pthread_mutex_unlock\(&mutex1\);) N
-() S 8 T () S
-(return) K
-( ) p
-(NULL) K
+(do) K n
+() p 8 T (:: b != 0 -> t = b; b = a % b; a = t;) N
+() S 8 T (:: b == 0 -> ) S
+(printf) K
+(\(") p
+(%d\\n) str
+(", a\);) p
+(break) K
 (;) p n
-(}) N
+() S 8 T () S
+(od) K n
+(}) p n
 () N
-(int) k
-( main\(\){) p n
-() S 8 T (pthread_t threads[NUM_THREADS];) N
+(init) K
+( {) p n
 () S 8 T () S
-(int) k
-( darts = 10000000;) p n
-() S 8 T () S
-(int) k
-( i,rc;) p n
-() S 8 T (srand\(time\() S
-(NULL) K
-(\)\);) p n
-() N
-() S 8 T () S
-(for) K
-(\(i =0;i< NUM_THREADS;i++\){) p n
-() S 8 T () S 16 T (rc = pthread_create\(&threads[i], ) S
-(NULL) K
-(, calc_points, \() p
-(void) k
-( *\) 200) p n
-(0000\);) N
-() S 8 T (}) N
-() S 8 T () S
-(for) K
-(\(i =0;i<NUM_THREADS;i++\){) p n
-() S 8 T () S 16 T (rc = pthread_join\(threads[i],) S
-(NULL) K
-(\);) p n
-() S 8 T (}) N
-() S 8 T () S
-(double) k
-( pi = \(4.0 * count\)/\() p
-(double) k
-(\)darts;) p n
-() S 8 T (printf\(") S
-(%lf\\n) str
-(", pi\);) p n
-() S 8 T () S
-(return) K
-( 0;) p n
+(run) K
+( gcd\(2322, 654\);) p n
 (}) N
-(pi.c) (Page 1/1) (Feb 01, 11 10:23) title
+(gcd.pml) (Page 1/1) (Mar 15, 11 10:06) title
 border
 grestore
 (Printed by richy) rhead
-(pi.c) (1/1) (Tuesday February 01, 2011) footer
+(gcd.pml) (1/2) (Tuesday March 15, 2011) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (1-2) 2
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+() p n
+(//Different Types of message types for the channel) c n
+(mtype) K
+( = {) p n
+(request, ) N
+(dialtone, ) N
+(number,) N
+(ringing,) N
+(engaged,) N
+(connected,) N
+(hungup,) N
+(hangup,) N
+(}) N
+() N
+(//Connect is a channel used between the exchange and a subscriber.) c n
+(chan) k
+( connect = [0] ) p
+(of) K
+( {) p
+(mtype) K
+(, ) p
+(chan) k
+(};) p n
+() N
+(active) K
+( ) p
+(proctype) K
+( exchange\(\){) p n
+() N
+(chan) k
+( recv;) p n
+() N
+(idle: connect?request,recv;) N
+() S 8 T () S
+(//Everything here is in response.) c n
+() p 8 T () S
+(//Send dialtone and get number) c n
+() p 8 T (recv!dialtone;) N
+() S 8 T (recv?number;) N
+() S 8 T () S
+(//Main Call Logic) c n
+() p 8 T ({) N
+() S 8 T () S
+(if) K n
+() p 8 T (::recv!ringing ->) N
+() S 8 T () S 16 T (recv!connected;) N
+() S 8 T () S 16 T () S
+(if) K n
+() p 8 T () S 16 T () S
+(//Startover if receiver hangs up the phone) c n
+() p 8 T () S 16 T (:: recv!hungup; ) S
+(goto) K
+( startover;) p n
+() S 8 T () S 16 T (:: ) S
+(skip) K n
+() p 8 T () S 16 T () S
+(fi) K n
+() p 8 T (::recv!engaged ; ) S
+(goto) K
+( startover;) p n
+() S 8 T () S
+(fi) K
+(;) p n
+() S 8 T (}) N
+() S 8 T () S
+(//Unless statements in promela are different ) c n
+() p 8 T () S
+(//After every statement in block 1) c n
+() p 8 T () S
+(//Before every line executes in the code block above,) c n
+() p 8 T () S
+(//It checks that none of the lines in the unless blocks are executable) c n
+() p 8 T () S
+(unless) K
+( {) p n
+() S 8 T () S 16 T () S
+(if) K n
+() p 8 T () S 16 T () S
+(//If the subs has hung up, restart exchange ) c n
+() p 8 T () S 16 T (:: recv?hangup -> ) S
+(goto) K
+( idle;) p n
+() S 8 T () S 16 T () S
+(//If it reaches a point of no executable code goto startover.) c n
+() p 8 T () S 16 T (:: ) S
+(timeout) K
+( -> ) p
+(goto) K
+( startover;) p n
+() S 8 T () S 16 T () S
+(fi) K n
+() p 8 T (}) N
+(startover: recv?hangup; ) S
+(goto) K
+( idle;) p n
+(}) N
+() N
+() N
+(//Subscriber proctype, ) c n
+(//This will be the first to make contact) N
+(active) K
+( ) p
+(proctype) K
+( subscriber\(\){) p n
+() N
+(chan) k
+( call = [0] ) p
+(of) K
+( {) p
+(mtype) K
+(};) p n
+() N
+(idle : connect!request,call;) N
+() S 8 T () S
+(//When we have connected with the exchange all requests go through call ) c n
+(phones.pml) (Page 1/2) (Mar 14, 11 11:24) title
+border
+/v 1 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(chan) c n
+() p 8 T () S
+(//Look for dialtone) c n
+() p 8 T (call?dialtone;) N
+() S 8 T () S
+(//If dialtone send number) c n
+() p 8 T (call!number;) N
+() S 8 T () S
+(if) K n
+() p 8 T () S
+(//If the exchange is ringing) c n
+() p 8 T (:: call?ringing -> ) N
+() S 8 T () S 16 T () S
+(if) K n
+() p 8 T () S 16 T (:: call?connected ->) N
+() S 8 T () S 16 T () S 24 T () S
+(if) K n
+() p 8 T () S 16 T () S 24 T (:: call?hungup) N
+() S 8 T () S 16 T () S 24 T (:: ) S
+(timeout) K n
+() p 8 T () S 16 T () S 24 T () S
+(fi) K n
+() p 8 T () S 16 T () S
+(//Keep's going until call is connected.) c n
+() p 8 T () S 16 T (:: ) S
+(skip) K n
+() p 8 T () S 16 T () S
+(fi) K n
+() p 8 T () S
+(//If Engaged, then just loop ) c n
+() p 8 T (:: call?engaged ;) N
+() S 8 T () S
+(fi) K
+(;) p n
+() S 8 T () S
+(//Do hangup and go back 2 beginning.) c n
+() p 8 T (call ! hangup ; ) S
+(goto) K
+( idle;) p n
+(}) N
+(phones.pml) (Page 2/2) (Mar 14, 11 11:24) title
+border
+grestore
+(Printed by richy) rhead
+(phones.pml) (2/2) (Tuesday March 15, 2011) footer
 end % of iso1dict
 pagesave restore
 showpage
