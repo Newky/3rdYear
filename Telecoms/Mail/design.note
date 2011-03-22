@@ -1,0 +1,9 @@
+Some sort of user system.
+
+mail_add_user <user_name> <password> 
+
+This saves private and public key under .keys/username/ directory under name priv.key and pub.key
+
+
+
+
