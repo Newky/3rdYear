@@ -26,6 +26,13 @@ def get_email(msg):
 
 	return user
 
+def get_subject():
+	subject = raw_input("Subject:")
+	f = open("/tmp/subj", "w")
+	f.write(subject)
+	f.close()
+	return 
+
 def get_body():
 	line= raw_input("Body:\n");
 	body = line + "\n"
@@ -34,7 +41,12 @@ def get_body():
 		line = raw_input();
 		body += line + "\n"
 
-	return body
+
+	f = open("/tmp/mail", "w")
+	f.write(body)
+	f.close()
+
+	return 
 
 def gen_keys(user):
 	key_dir = ".keys/%s" %(user)
@@ -59,7 +71,7 @@ def encrypt_body(mail, user, password = None):
 	priv_key_path = key_dir + "/" + "private.pem"
 	if password is None:
 		password = raw_input("Passphrase:")
-	command = "openssl enc -aes-256-cbc -a -salt -in %s -pass pass:%s" %("/tmp/mail", password)
+	command = "openssl rsautl -encrypt -pubin -inkey %s -in %s -out %s" %(mail, password)
 	p=os.popen(command)
 	return (p.read(), password)
 
@@ -92,9 +104,11 @@ def set_up_imap_link(sender):
 	pwd = raw_input("Passphrase:")
 	command = "echo '%s' | openssl enc -d -aes-256-cbc -a -out %s -pass pass:%s" %(e_body,"/tmp/mail",pwd)
 	p=os.popen(command)
+	print "Body:%s\n" %(command)
 	command = "echo '%s' | openssl enc -d -aes-256-cbc -a -pass pass:%s" %(msg["Subject"],pwd)
 	p=os.popen(command)
-	print "Subject: %s" %(p.read())
+	print "Subject:%s\n" %(command)
+	#print "Subject: %s\nBody:" %(p.read())
 	p.close()
 	f = open("/tmp/digest", "w")
 	f.write(e_digest)
@@ -112,21 +126,16 @@ if __name__ == "__main__":
 	if action == "s":
 		to = get_email("To:")
 		sender = get_email("From:")
-
-		subject = raw_input("Subject:")
+		subject = get_subject()
 		mail = get_body()
-
-		f = open("/tmp/mail", "w")
-		f.write(mail)
-		f.close()
-		
+		#generate private and public keys for sender if not already done.
 		gen_keys(sender)
 		#Sign the digest with private key, can be verified by your public key 
 		digest_signed = sign_digest(mail, sender)
-		#Garbled.
-		#digest_signed
-		(encrypted_body,passphrase) = encrypt_body(mail, sender)
-		(encrypt_subject, passphrase) = encrypt_body(subject, sender, passphrase)
+
+		#encrypt body and subject.
+		(encrypted_body,passphrase) = encrypt_body("/tmp/mail", sender)
+		(encrypt_subject, passphrase) = encrypt_body("/tmp/subj", sender, passphrase)
 
 		msg = MIMEMultipart()
 		msg["To"] = to
