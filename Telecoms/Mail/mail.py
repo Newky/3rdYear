@@ -115,8 +115,8 @@ def encrypt_pass(passphrase, user):
 	'''
 	pub_key_path = get_pub_key(user)
 	command = "echo '%s' | openssl rsautl -encrypt -pubin -inkey %s -out %s" %(passphrase, pub_key_path, "/tmp/epass")
-	p=os.popen(command)
-	return p.read()
+	os.popen(command)
+	return 
 	
 def decrypt_pass(user):
 	'''
@@ -165,8 +165,6 @@ def set_up_smtp_link(user):
 	return smtpserver
 
 def set_up_imap_link(sender):
-	key_dir = ".keys/%s" %(sender)
-	pub_key_path = key_dir + "/" + "public.pem"
 	pwd = raw_input("Password for gmail auth:")
 	#imap = imaplib.IMAP4_SSL("localhost", 993)
 	imap = imaplib.IMAP4_SSL("imap.gmail.com", 993)
@@ -208,7 +206,7 @@ def get_message(imap):
 	f.write(e_digest)
 	f.close()
 	#Verify and decrypt the digest
-	command = "openssl dgst -sha1 -verify %s -signature %s %s" %(pub_key_path,"/tmp/digest", "/tmp/mail")
+	command = "openssl dgst -sha1 -verify %s -signature %s %s" %(get_pub_key(msg["From"]),"/tmp/digest", "/tmp/mail")
 	p=os.popen(command)
 	e_digest = p.read()
 	#Check the verification
@@ -243,7 +241,7 @@ if __name__ == "__main__":
 		msg["From"] = sender
 		msg["Subject"] = encrypt_subject
 		#Encrypt the password
-		encrypted_pass = encrypt_pass(passphrase, to)
+		encrypt_pass(passphrase, to)
 		#Attach the body
 		msg.attach(MIMEText(encrypted_body, 'plain'))
 		#The attachments are application octet-stream
@@ -273,5 +271,6 @@ if __name__ == "__main__":
 		sender = get_email("Login:")
 		#Set up the imap 
 		imap = set_up_imap_link(sender)
+		get_message(imap)
 		
 		
