@@ -6,25 +6,33 @@
 int balancea = 100;
 int balanceb = 100;
 int balancec = 100;
-int spinlock = 0;
+volatile int spinlock = 0;
+//Used in spin lock
 int count = 0;
+//Used in ticket lock
+int queue = 0;
+int dequeue = 1;
 
-void lock() { 
-	__asm__("jmp	start;"
-		"counter:;"
-			"addl	$1, count;"
-		"start:;"
-			"cmpl $0, spinlock;"
-			"jne	counter;"
-			"movl	$1, spinlock;"
-			);
+// fetch and swap (for simple spin locks)
+static inline int swap(volatile int *mem, int value)
+{
+    int result;
+
+    __asm __volatile (
+        "xchgl %0, %1\n\t"
+        : "=r" (result), "=m" (*mem)
+        : "0" (value), "m" (*mem));
+
+    return result;
 }
 
-void unlock () {
-	__asm__(	
-		
-			"movl	$0,spinlock;"
-	);
+static inline int fetch_inc(int *mem, int inc)
+{
+    asm volatile("lock xadd %0,%1"
+         : "=r" (inc), "=m" (*mem)
+         : "0" (inc)
+         : "memory");
+    return inc;
 }
 
 struct thread_args {
@@ -34,14 +42,18 @@ struct thread_args {
 
 void * bank (void * ptr) {
 	struct thread_args *args = (struct thread_args *)ptr;
-	lock();
 	int * srcbalance = args->srcbalance;
 	int * destbalance = args->destbalance;
 	int i = 0;
 	int amount;
 	for (i = 0; i < 1000000; i++) {
 		amount = (rand() % 21) + 1;
-
+		//Spin lock
+		/*while(swap(&spinlock, 1)) {count++;}*/
+		//fetch lock
+		fetch_inc(&queue, 1);
+		fprintf(stderr, "%d\n", queue);
+		while(fetch_inc(&dequeue,0) != fetch_inc(&queue,0) ) {count++;}
 		if(*srcbalance > 0){
 			if(*srcbalance < amount)
 				amount = *srcbalance;
@@ -50,8 +62,11 @@ void * bank (void * ptr) {
 				*destbalance += amount;
 			}
 		}
+		//Spin Lock
+		/*swap(&spinlock, 0);*/
+		//fetch lock
+		fetch_inc(&dequeue, 1);
 	}
-	unlock();
 }
 
 
@@ -77,7 +92,7 @@ int main()
 	pthread_join(t2, NULL);
 	pthread_join(t3, NULL);
 
-	printf("%d %d %d \n", balancea, balanceb, balancec);
+	printf("%d %d %d %d\n", balancea, balanceb, balancec, count);
 
 	return 0;
 }
