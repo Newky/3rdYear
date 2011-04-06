@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 import sys
 import re
 import os
@@ -12,8 +11,6 @@ from email import encoders
 from email.MIMEMultipart import MIMEMultipart
 from email.MIMEBase import MIMEBase
 from email.MIMEText import MIMEText
-from email.MIMEAudio import MIMEAudio
-from email.MIMEImage import MIMEImage
 
 #Premade regex for email validation
 validate = "^.+\\@(\\[?)[a-zA-Z0-9\\-\\.]+\\.([a-zA-Z]{2,3}|[0-9]{1,3})(\\]?)$"
@@ -92,7 +89,7 @@ def get_pub_key(user):
 	os.popen(command)
 	command = "openssl verify -CAfile %s %s" %("/tmp/cacert.pem", "/tmp/usercert.pem")
 	output= os.popen(command).read()
-	if(re.match("%s: OK" %("/tmp/usercert.pem"), output)):
+	if "OK" in output:
 		command = "openssl x509 -inform pem -in %s -pubkey -noout > %s" %("/tmp/usercert.pem", "/tmp/userpub.pem")
 		os.popen(command)
 		return "/tmp/userpub.pem"
@@ -122,8 +119,8 @@ def decrypt_pass(user):
 	'''
 	undos the encrypt_pass method
 	'''
-	pub_key_path = get_private_key(user)
-	command = "openssl rsautl -decrypt -inkey %s -in %s" %( pub_key_path, "/tmp/epass")
+	priv_key_path = get_private_key(user)
+	command = "openssl rsautl -decrypt -inkey %s -in %s" %( priv_key_path, "/tmp/epass")
 	p=os.popen(command)
 	return p.read()
 
@@ -156,8 +153,8 @@ def set_up_smtp_link(user):
 	the stmp link object
 	'''
 	pwd = getpass("Password for gmail auth:")
-	smtpserver = smtplib.SMTP("smtp.gmail.com",587)
-	#smtpserver = smtplib.SMTP("localhost",587)
+	#smtpserver = smtplib.SMTP("smtp.gmail.com",587)
+	smtpserver = smtplib.SMTP("localhost",587)
 	smtpserver.ehlo()
 	smtpserver.starttls()
 	smtpserver.ehlo
@@ -166,8 +163,8 @@ def set_up_smtp_link(user):
 
 def set_up_imap_link(sender):
 	pwd = raw_input("Password for gmail auth:")
-	#imap = imaplib.IMAP4_SSL("localhost", 993)
-	imap = imaplib.IMAP4_SSL("imap.gmail.com", 993)
+	imap = imaplib.IMAP4_SSL("localhost", 993)
+	#imap = imaplib.IMAP4_SSL("imap.gmail.com", 993)
 	imap.login(sender, pwd)
 	return imap
 
